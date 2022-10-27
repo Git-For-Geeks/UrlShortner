@@ -1,179 +1,168 @@
-from django.shortcuts import render,redirect
+from base64 import urlsafe_b64decode
+
+from multiprocessing import *
+
+from telnetlib import LOGOUT
+from typing import Type
+from datetime import datetime
+from .models import ShortLongUrlStore
+
+from django.conf import settings
+from django.forms import EmailField, PasswordInput
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-#from zmq import device
-from .models import LongToShort
-from .models import Meta_Data
-import json
-import requests
+from django.template.loader import render_to_string
+from django.core.mail import EmailMessage,send_mail
+
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate,login,logout
+from django.contrib import messages
+from django.contrib.sites.shortcuts import get_current_site
+
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes,force_str
+
+from myproject import settings
 
 # Create your views here.
 def hello_world(request):
-    return HttpResponse("HELLO WORLD") 
-
+    return HttpResponse("Hello World!")
 
 def home_page(request):
-    
-    context_data={
-        "submitted": False,
-        "error": False
-    }
-    if(request.method=='POST'):
+    context = {
+            "submitted" : False,
+            "keyError" : False
+        }
+    if request.method == 'POST':
+        # print(request.POST)
+        data = request.POST #dict
+        long_url = data.get('longurl')
+        custom_name = data.get('custom_name')
+        username = request.user.username
         
-        data=request.POST
-        longurl=data['long_url']
-        customname=data['custom_name']
-        
     
+        
         try:
-            obj=LongToShort(long_url=longurl,short_url=customname)
+            #saving data to data base 
+            #create
+            obj=ShortLongUrlStore(long_url = long_url,short_url = custom_name,username=username) # table column name <- variable name
             obj.save()
-            context_data["submitted"]=True
-            context_data["date"]=obj.date
-            context_data["clicks"]=obj.clicks
+            #read        
+            date = obj.date #accessing date from database
+            clicks = obj.clicks      
+            context['long_url'] = long_url
+            context['short_url'] = request.build_absolute_uri() + custom_name
+            context['Date'] = date #taken from database
+            # context['Date'] = datetime.now().strftime("%B %d, %Y %H : %M") # : %S") #using python
+            context['Clicks'] = clicks
+            context['submitted'] = True
+            if request.user.is_authenticated:
+                f_name=request.user.first_name
+                context['fname']=f_name
         except:
-            context_data["error"]=True
-            
-        context_data["long_url"]=longurl
-        context_data["short_url"]= request.build_absolute_uri()+customname
-        
+            context['keyError'] = True
     else:
-        print("NO data found")
+        print("User not sending any data")
         
-    return render(request,"index.html",context_data)
+    
+    # print(request.method)
+    return render(request,"index.html",context)
 
-
-def redirect_url(request,short_url):
-    print(short_url)
-    row=LongToShort.objects.filter(short_url=short_url)
-    if len(row)==0:
-        return HttpResponse("NO such url exist")
-    obj=row[0]
-    long_url=obj.long_url
-
-    obj.clicks=obj.clicks+1
-    obj.save()
-
-
-
-    #new code
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
+def redirect_url(request,DBreqCustomName):
+    filterUrl = ShortLongUrlStore.objects.filter(short_url=DBreqCustomName)
+    if len(filterUrl) == 0:
+        return HttpResponse("No such short url found.")
     else:
-        ip = request.META.get('REMOTE_ADDR')
-    
-    device_type = ""
-    browser_type = ""
-    os_type = ""
-    
-    if request.user_agent.is_mobile:
-        device_type = "Mobile"
-    if request.user_agent.is_tablet:
-        device_type = "Tablet"
-    if request.user_agent.is_pc:
-        device_type = "PC"
-    
-    browser_type = request.user_agent.browser.family
-    os_type = request.user_agent.os.family
-    context_metadata = {
-        "ip": ip,
-        "device_type": device_type,
-        "browser_type": browser_type,
-        "os_type":os_type,
-    }
-    string1="http://api.ipstack.com/"
-    string2="?access_key=1081db7f9542e3cca739358ce1b4ee3f"
-    link=string1+ip+string2
-    
-
-    resp = requests.get(link)
-    data = resp.json()
-    countryname=data["country_name"]
-    if(countryname==None):
-        countryname="Unites States"
-    
-    #countryname="China"
-    #data["country_name"]=countryname
-    print(data)
-    print(data["country_code"])
-    meta_obj=Meta_Data(new_short_url=short_url,country_name=countryname,device_name=device_type,browser_name=browser_type)
-    meta_obj.save()
-    # print(meta_obj)
-    #code end
-    
-    
-    # #print(request.META)
-    # x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    # if x_forwarded_for:
-    #     ip = x_forwarded_for.split(',')[0]
-    # else:
-    #     ip = request.META.get('REMOTE_ADDR')
-    # #return ip
-    # string1="http://api.ipstack.com/"
-    # string2="?access_key=1081db7f9542e3cca739358ce1b4ee3f"
-    # link=string1+ip+string2
-    # # print(link)
-    # resp = requests.get(link)
-    # data = resp.json()
-    # meta_obj=Meta_Data(country_name=data.country_name,device_name="Laptop",browser_name="Google")
-    # meta_obj.save()
-
-    
-    return redirect(long_url)
+        objFound=filterUrl[0]
+        FoundLongUrl = objFound.long_url
+        objFound.clicks = objFound.clicks + 1
+        objFound.save()
+        return redirect(FoundLongUrl)
     
 def all_analytics(request):
-    rows=LongToShort.objects.all()
-    new_context={
-        "rows":rows
+    user = request.user
+    rows = ShortLongUrlStore.objects.filter(username = user)
+    context = {
+        "rows" : rows
     }
-    
-    return render(request,"all-analytics.html",new_context)
-    
+    return render(request, "all-analytics.html",context)
+
+def sign_up(request):
+    if request.method == 'POST':
+        # print(request.POST)
+        data = request.POST #dict
+        usernameIn=data.get('username')
+        EmailIn = data.get('email')
+        fnameIn=data.get('fname')
+        lnameIn=data.get('lname')
+        PswrdIn = data.get('pswrd')
+        ConfirmPswrdIn = data.get('confirmpswrd')
+        
+        if User.objects.filter(username=usernameIn):
+            messages.error(request,"Username already exists...Try another Username")
+            return redirect('signup')
+
+        if User.objects.filter(email=EmailIn):
+            messages.error(request,"Email already registered...Try another email")
+            return redirect('signup')
+            
+        if len(usernameIn)>10:
+            messages.error(request,"Length of Username is > 10")
+            return redirect('signup')
+        
+        if not usernameIn.isalnum():
+            messages.error(request,"Only AlphaNumeric values are allowed as Username.")
+            return redirect('signup')
+        
+        try:
+            if (PswrdIn == ConfirmPswrdIn):
+                myUser=User.objects.create_user(usernameIn,EmailIn,PswrdIn)
+                myUser.first_name=fnameIn
+                myUser.last_name = lnameIn
+                myUser.is_active = True
+                # myUser.is_active = False
+                myUser.save()
+                
+                messages.success(request, "Your account is successfully created.Please login with your respective credentials")
+            
+                return redirect('signin')
+                # return redirect('home')
+            else:
+                messages.error(request,"Password Mismatch")
+        except:
+            messages.error(request,"User Already exists...Plese Sign In to continue")
+            return redirect('signin')
+        
+    return render(request,"signUp.html")
+
+def sign_in(request):
+    if request.method == 'POST':
+        # print(request.POST)
+        data = request.POST #dict
+        username_emailChk=data.get('username_email')
+        PswrdChk = data.get('pswrd')
+        
+        if '@' in username_emailChk:
+            user = authenticate(email=username_emailChk,password=PswrdChk)
+        else:
+            user = authenticate(username=username_emailChk,password=PswrdChk)
+
+            
+        if user is not None:
+            login(request,user)
+            fname =  user.first_name
+            context={
+                'fname':fname,
+            }
+            return redirect('home')
+            # return render(request,"index.html",context)
+        else:
+            messages.error(request,"Bad credentials")
+            return redirect('signin')
+    return render(request,"signIn.html")
 
 
-def url_analytics(request,short_urls):
-    print(short_urls)
-    row=Meta_Data.objects.filter(new_short_url=short_urls)
-    row_url=LongToShort.objects.filter(short_url=short_urls)
-    obj_temp=row_url[0]
-    n=len(row)
-    
-    url_dict={
-        "short_url":short_urls,
-        "long_url":obj_temp.long_url,
-        "clicks":obj_temp.clicks,
-        "last_visit":row[n-1].last_visit
-    }
-    print(url_dict["last_visit"])
-    url_dict["date"]=obj_temp.date
-    country_dict={}
-    browser_dict={}
-    device_dict={}
-    #device_dict[ele.device_name]=device_dict[ele.device_name]+1
-    set1=set()
-    for ele in row:
-       cn=ele.country_name
-       if(cn=="United State"):
-        cn="USA"
-       if(cn=="United Kingdom"):
-        cn="UK"
-       dn=ele.device_name
-       bn=ele.browser_name
-       set1.add(cn)
-       url_dict[cn] = url_dict.get(cn, 0) + 1
-       url_dict[dn]=url_dict.get(dn,0)+1
-       url_dict[bn]=url_dict.get(bn,0)+1
-    
-    
-    list1=list(set1)
-    url_dict["country_list"]=list1
-    
-    
-    return render(request,"analytics.html",url_dict)
-    
-def test(request):
-    
-    context_data={
-        "name":"bhushan"
-    }
-    return render(request,"test.html",context_data)
+def sign_out(request):
+    logout(request)
+    messages.success(request,"Successfully Logged out!")
+    return redirect('home')

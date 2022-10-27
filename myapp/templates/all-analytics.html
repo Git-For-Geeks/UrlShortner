@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en" class="">
 
@@ -12,28 +13,39 @@
 	<link rel="stylesheet" href="{% static 'style.css' %}" type="text/css" media="screen">
 </head>
 
-<body class="pace-done lout_stats30 bg-warning">
+<body class="pace-done lout_stats30">
 	<main id="content" role="main" class="wyniki wyniki_all">
 		<div class="container">
 			<div class="row">
 				<div class="col-12 page_log_in mt-0">
-					<h2 class="h1" style="text-align: center;">All Links Analytics</h2>
+					<h2 class="h1" style="text-align: center;">All Your Short Links ;)</h2>
 				</div>
-             {% for obj in rows %}
-				<div class="url_options url_stats_o" id="1">
-					<p class="data_link">{{ obj.date }}</p>
-					<p class="url_link">
-						{{ obj.long_url }}
-					</p>
-					<p id="link" class="link_element">
-						<a href="/analytics/{{ obj.short_url }}" class="short_url_l" target="blank">
-							{{ obj.short_url }}</a>
-					</p>
-					<div class="stats_total btn-cutt click_stats btn_norm">
-						<div>Total clicks <strong class="allClicks">{{ obj.clicks }}</strong></div>
-					</div>
-				</div>
-             {% endfor %}
+
+				{% if user.is_authenticated %}
+					{% if rows|length > 0 %}
+					{% comment %} {{rows|length}} {% endcomment %} <!--printing rows length-->
+						{% for obj in rows %}
+
+						<div class="url_options url_stats_o" id="1">
+							<p class="data_link">{{ obj.date }}</p>
+							<p class="url_link">
+								{{ obj.long_url }}
+							</p>
+							<p id="link" class="link_element">
+								<a href="/{{ obj.short_url }}" class="short_url_l" target="blank">
+									{{ obj.short_url }}</a>
+							</p>
+							<div class="stats_total btn-cutt click_stats btn_norm">
+								<div>Total clicks <strong class="allClicks">{{ obj.clicks }}</strong></div>
+							</div>
+						</div>
+						{% endfor %}
+					{%else%}
+						<p style="font-size: 150%; font-family: algerian, courier; line-height: 90%; color : #000000"> <br><br><a href="/#shorten">Start shortening</a> your first URL to show your shortened URLs here ;)</p>
+					{%endif%}
+				{% else %}
+					<p style="font-size: 100%; font-family: algerian, courier; line-height: 90%; color : #000000"> <br><br>Please <a href="/signin"> login </a> or <a href="/signup">signup</a> to view this data</p>
+				{% endif %}
 			</div>
 		</div>
 	</main>
