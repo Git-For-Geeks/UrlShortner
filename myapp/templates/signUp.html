@@ -1,0 +1,183 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<title>Custom URL Shortener</title>
+
+	<link rel="stylesheet" href="{% static 'bootstrap.min.css' %}" type="text/css" media="screen">
+	<link rel="stylesheet" href="{% static 'style.css' %}" type="text/css" media="screen">
+</head>
+
+<body class="pace-done is_index_lout">
+	<main id="content" role="main">
+		<section class="container-fluid mx-0 bg_cuttly_main_092021">
+			<div class="header__bg"></div>
+			<div class="mb-0">
+				<div class="container position-relative">
+					{% for message in messages %}
+                    <div class="alert alert-{{ message.tags}} alert-dismissible fade show" role ="alert">
+                        <strong>Message :  </strong> {{message}}
+                        <button type="button" class="close" data-dismiss = "alert" aria-label ="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+					<div class="row">
+						<div class="col-md-6 cutt_main_b2">
+                            <img src=" {% static 'Rebrandly.png' %}" />
+						</div>
+                        <div>
+                            <br><br><br><br>
+                            &emsp; &emsp; &emsp; &emsp;
+                            <br><h2 style="width: 0.8em; font-size: 200%; font-family: algerian, courier; line-height: 90%; color : #ffffff" >Paste.</h2>
+                            
+                            &emsp; &emsp; &emsp; &emsp;
+                            <span style="float:right; width: 0.8em; font-size: 1200%; font-family: algerian, courier; line-height: 30%; color:#eb9e34 ">URL.</span>
+                            
+                            &emsp; &emsp; &emsp; &emsp; 
+                            <br><h2 style="width: 0.8em; font-size: 200%; font-family: algerian, courier; line-height: 90%; color : #ffffff; ">Short.</h2>
+                            
+                            &emsp; &emsp; &emsp; &emsp;
+                            <br><h2 style="width: 0.8em; font-size: 200%; font-family: algerian, courier;line-height: 90%; color : #ffffff; " >Use.</h2>
+                            
+                            </div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="bg_main" id="shorten" style="padding-bottom: 5%;">
+			<div class="container cutt_main_inp">
+				<div class="row">
+					<div class="col-12 mt-4 py-2 mb-2">
+						<div>
+							<p style="font-size: 100%; font-family: algerian, courier; line-height: 90%; color : #000000">
+							&emsp; 
+							Username:
+							
+							&emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp;&emsp; &emsp;
+                            Email:
+							</p>
+						</div>
+						<br>
+						<form method="post" id="form_input" action="/signup">
+							{% csrf_token %}
+							<div class="signup_input">
+								<input type="text" name="username" class="cutt_url w-45 p-4 rounded-12" placeholder="John Doe" style="margin-left: 1%;" required />
+								<input type="email" name="email" class="cutt_url w-45 p-4 rounded-12" placeholder="johndoe@gmail.com" style="margin-left: 8%;" required />
+								
+								<br><br>
+								<div>
+									<p style="font-size: 100%; font-family: algerian, courier; line-height: 90%; color : #000000">
+									&emsp; 
+									First Name:
+									
+									&emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp;&emsp; &emsp;
+                            		Last Name:
+								</p>
+								</div>
+								<br>
+
+								<input type="text" name="fname" class="cutt_url w-45 p-4 rounded-12" placeholder="John" style="margin-left: 1%;" required />
+								<input type="text" name="lname" class="cutt_url w-45 p-4 rounded-12" placeholder="Doe" style="margin-left: 8%;" required />
+								
+								<br><br>
+								<div>
+									<p style="font-size: 100%; font-family: algerian, courier; line-height: 90%; color : #000000">
+									&emsp;
+									Password:
+
+									&emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &nbsp;
+									Confirm Password:
+									</p>
+								</div>
+								
+								<!--For Password bar-->
+								<br>
+								<input type="password" name="pswrd" id="pass" class="cutt_url w-45 p-4 rounded-12" placeholder="Password" style="margin-left: 1%;" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$" required />
+                                
+								<img src="{% static 'passEyeShow.png' %} " id="imgPass" height= 30px width = 30px onclick = "visiblePass()"> 
+								
+								&ensp; &ensp;&ensp; &ensp;
+								
+								<!--For Confirm Password bar-->
+								<input type="password" name="confirmpswrd" id="confirmpass" class="cutt_url w-45 p-4 rounded-12" placeholder="Confirm Password" style="margin-left: 1%;" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$" required />
+                                
+								<img src="{% static 'passEyeShow.png' %} " id="confirmImgPass" height= 30px width = 30px onclick = "visiblePassConfirm()"> 
+
+								<br><br>
+								<!--For SignUp and Clear buttons-->
+								&ensp; &ensp; <button class="btn btn-primary" type="submit" >Sign Up</button>
+                                &nbsp; &nbsp; <button type="reset" class="btn btn-outline-primary">Clear</button>
+								<br><br>
+								<h3 style="letter-spacing: 1.5px; text-align:left;"> Already a user? <a href="/signin"> Sign In</a></h3>
+							</div>
+						</form>
+                        <p>
+                            <br><br>&emsp; Note : Password should contain: <br>
+                            &emsp; &emsp; * One lower case Alphabet <br>
+                            &emsp; &emsp; * One upper case Alphabet <br>
+                            &emsp; &emsp; * One Numeric Value <br>
+                            &emsp; &emsp; * One symbol <br>
+                            &emsp; &emsp; * Should be of min 8 char <br>
+                            </p>
+					</div>
+				</div>
+
+				{% if keyError%}
+				<div class="row">
+					<div class="col-12 mt-4 py-2 mb-2" style="text-align: center; color: red;">
+						<p>The alias name is already taken</p>
+					</div>
+				</div>
+				{% endif %}
+
+			</div>
+		</section>
+
+		<footer class="footer-area footer--light">
+			<div class="mini-footer">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="copyright-text">
+								<p><a href="https://www.linkedin.com/in/darshan-rayala/" target="_new">Darshan Rayala</a></p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	</main>
+
+</body>
+<script>
+    function visiblePass() {
+        var p = document.getElementById("pass");
+        var i= document.getElementById("imgPass");
+        if (p.type === "password") {
+            p.type = "text";
+            i.src="{% static 'passEyeClose.png' %} ";
+        } else {
+            p.type = "password";
+            i.src="{% static 'passEyeShow.png' %} ";
+        }
+    }
+    function visiblePassConfirm() {
+        var pc = document.getElementById("confirmpass");
+        var ic= document.getElementById("confirmImgPass");
+        if (pc.type === "password") {
+            pc.type = "text";
+            ic.src="{% static 'passEyeClose.png' %} ";
+        } else {
+            pc.type = "password";
+            ic.src="{% static 'passEyeShow.png' %} ";
+        }
+    }    
+    </script>
+</html>

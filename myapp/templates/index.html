@@ -19,6 +19,39 @@
 			<div class="header__bg"></div>
 			<div class="mb-0">
 				<div class="container position-relative">
+
+					
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags}} alert-dismissible fade show" role ="alert">
+                        <strong>Message :  </strong> {{message}}
+                        <button type="button" class="close" data-dismiss = "alert" aria-label ="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+
+                    {% if user.is_authenticated%}
+					<!--Sign Out Button-->
+					<div class="butt_on mx-auto">
+						<h2 style=" font-size: 200%; font-family: algerian, courier; line-height: 90%; color : #ffffff" >Hello, {{fname}} </h2> &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; 
+						&emsp;&emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; 
+						&emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp;
+						<a href="/signout" class="btn_m_l btn_m_r" target="_self">Sign Out</a>
+					</div>
+
+                    {% else %}
+					<!--Sign up and Sign In Buttons-->
+					<div class="butt_on mx-auto">
+						<h2 style=" font-size: 200%; font-family: algerian, courier; line-height: 90%; color : #ffffff" >Hello, User </h2> &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; 
+						&emsp;&emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; 
+						<a href="/signin" target="_blank" class="btn_m_l btn_m_l_1">Sign In</a>
+						<a href="/signup" class="btn_m_l btn_m_r" target="_blank">Sign Up</a>
+					</div>
+
+					{% comment %} <p> Login Failed!...Click here to <a href="/signin"> Singin</a> or <a href = "/signup"> Signup</a></p> {% endcomment %}
+
+                    {% endif %}
+					<!---->
 					<div class="row">
 						<div class="dv_main col-md-6 cutt_main_b2">
 							<h2 class="h1">URL Shortener</h2>
@@ -26,11 +59,11 @@
 								Shorten, manage and track your links the easy way.</h3>
 							<div class="butt_on mx-auto">
 								<a href="#shorten" class="btn_m_l btn_m_l_1">Shorten</a>
-								<a href="/all-analytics" class="btn_m_l btn_m_r" target="_new">Analytics</a>
+								<a href="/all-analytics" class="btn_m_l btn_m_r" target="_blank">Your URLs</a>
 							</div>
 						</div>
 						<div class="col-md-6 mobile_bg text-right">
-							<img src="{% static 'Rebrandly.png' %}" />
+							<img src=" {% static 'Rebrandly.png' %}" />
 						</div>
 					</div>
 				</div>
@@ -45,9 +78,9 @@
 							{% csrf_token %}
 							<div class="input-group">
 								<input type="url" class="cutt_url w-50 p-4 rounded-12"
-									placeholder="Paste long url and shorten it" name="long_url" required />
+									placeholder="Paste long url to shorten it" name="longurl" required />
 
-								<input type="text" class="cutt_url w-25 p-4 rounded-12" placeholder="alias"
+								<input type="text" class="cutt_url w-25 p-4 rounded-12" placeholder="alias keyword"
 									name="custom_name" style="margin-left: 5%;" />
 
 								<button class="btn_cutt rounded-6 shortenit_b" role="button">Shorten</button>
@@ -56,26 +89,26 @@
 					</div>
 				</div>
 
-              {% comment %} {% if error %}
+				{% if keyError%}
 				<div class="row">
 					<div class="col-12 mt-4 py-2 mb-2" style="text-align: center; color: red;">
 						<p>The alias name is already taken</p>
 					</div>
 				</div>
+				{% endif %}
 
-              {% endif %} {% endcomment %}
-			  
 			</div>
-          {% if submitted %}
+
+			{% if submitted %}
+
 			<div id="results">
 				<div class="container">
 					<div class="row py-4">
 						<div class="col-12 result">
 							<div class="url_options rounded-6" id="0">
-								<p class="data_link">{{ date }}</p>
+								<p class="data_link"> {{ Date }} </p>
 								<p class="url_link">
 									{{ long_url }}
-
 								</p>
 								<p id="link" class="link_element">
 									<a href="{{ short_url }}" class="short_url_l" target="_blank">{{ short_url }}</a>
@@ -89,7 +122,7 @@
 										<use xlink:href="#i_chart"></use>
 									</svg>
 									<span>
-										<b class="badge">{{ clicks }}</b>clicks
+										<b class="badge">{{Clicks}}</b>clicks
 									</span>
 								</a>
 							</div>
@@ -97,7 +130,9 @@
 					</div>
 				</div>
 			</div>
-          {% endif %}
+
+			{% endif %}
+
 			<div class="container" id="alert-box" style="display: none">
 				<div class="row py-4">
 					<div class="col-9"></div>
@@ -116,7 +151,7 @@
 					<div class="row">
 						<div class="col-md-12">
 							<div class="copyright-text">
-								<p><a href="https://www.o1codingclub.in/">O(1) Coding Club</a></p>
+								<p><a href="https://www.linkedin.com/in/darshan-rayala/" target="_blank">Darshan Rayala</a></p>
 							</div>
 						</div>
 					</div>
